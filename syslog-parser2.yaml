@@ -1,0 +1,24 @@
+name: syslog-parser2
+tests: []
+fieldsToBeRemovedBeforeParsing: []
+$schema: https://schemas.humio.com/parser/v0.2.0
+script: |-
+  //Supported syslog formats till now
+
+  //   all rsyslog output logs including audit log output to rsyslog
+
+  case {
+      // Audit Log
+      /(<(?<priority>\d+)>)?(?<@timestamp>\S+\s+\S+\s+\S+)\s+(?<host>\S+)\s+(?<app>\S+)\s+node=(?<audit_node>\S+)\s+type=(?<audit_type>\S+)\smsg=audit\((\S+):(?<audit_counter>\d+)\):\s(?<audit_content>.*)/
+      // if applicable - extract the msg field further
+
+      // Audit log time is in unix epoch in seconds
+      | parseTimestamp("yyyy-MM-dd'T'HH:mm:ss[.SSS]XXX", field=@timestamp);
+     /<(?<priority>\d+)>(?<version>\d+)\s(?<@timestamp>\S+)\s+(?<host>\S+)\s+(?<app>\S+)(?<msg>.*)/ | parseTimestamp("yyyy-MM-dd'T'HH:mm:ss[.SSS]XXX", field=@timestamp);
+  // General logs
+     /(<(?<priority>\d+)>)?(?<@timestamp>\S+\s+\S+\s+\S+)\s+(?<host>\S+)?\s+(?<app>[^\s\[:]+)?(\[(?<pid>[^\]]+)\]:)?(?<msg>.*)/ |
+  parseTimestamp("MMM [ ]d HH:mm:ss", field=@timestamp, timezone="UTC");
+
+  /(<(?<priority>\d+)>)?(?<@timestamp>\S+)\s+(?<host>\S+)?\s+(?<app>[^\s\[:]+)?(\[(?<pid>\d+)\]:)?(?<msg>.*)/ | parseTimestamp("yyyy-MM-dd'T'HH:mm:ss[.SSS]XXX", field=@timestamp);
+  } | kvParse()
+tagFields: []
