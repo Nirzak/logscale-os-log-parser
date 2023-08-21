@@ -1,2 +1,2 @@
 # logscale-os-log-parser
-OS log parser for Crodsstrike Falcon Logscale
+OS log parser for Crowdstrike Falcon Logscale
